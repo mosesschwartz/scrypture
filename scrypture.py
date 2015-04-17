@@ -57,6 +57,7 @@ def test():
 @app.route('/dl/<script_file_name>', methods=['GET'])
 def download_script(script_file_name):
     '''Send a script directly from the scripts directory'''
+    return "Sorry! Temporarily disabled."
     if script_file_name[:-3] in registered_modules:
         loaded_module = registered_modules[script_file_name[:-3]]
         package_path = os.sep.join(loaded_module.__package__.split('.')[1:])
