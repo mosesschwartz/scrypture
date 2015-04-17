@@ -37,6 +37,7 @@ registered_scripts = [
 'quick_hash',
 'convert_epoch_time',
 'file_hash',
+'silly_demo',
 #'curl_to_requests'
 ]
 
