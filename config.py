@@ -8,5 +8,5 @@ UPLOAD_FOLDER = '/Users/moses/GitHub/scrypture/files'
 SCRIPTS_DIR = os.path.join(os.getcwd(), 'scripts')
 BOOTSTRAP_SERVE_LOCAL = True
 SCRIPT_ROOT = '/'
-LOCAL_DEV = True
+LOCAL_DEV = False#True
 

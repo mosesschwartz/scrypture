@@ -74,10 +74,26 @@ def download_file(file_id, file_name):
     extracted_out_dir = os.path.join(app.config['UPLOAD_FOLDER'], file_id)
     return send_file(os.path.join(extracted_out_dir,file_name))
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('error.html',
+                           scripts=registered_modules,
+                           module_name=e,
+                           error_message='Module not found'), 404
+
+@app.errorhandler(500)
+def page_not_found(e):
+    return render_template('error.html',
+                           scripts=registered_modules,
+                           module_name=e,
+                           error_message='An error occurred! Sorry.'), 500
+
 @app.route('/s/<module_name>', methods=['GET'])
 def script_input(module_name):
     '''Render a module's input page. Forms are created based on objects in
     the module's WebAPI class.'''
+    if module_name not in registered_modules:
+        return page_not_found(module_name)
     form = registered_modules[module_name].WebAPI()
     return render_template('script_index.html',
                            form=form,
