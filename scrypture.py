@@ -37,7 +37,7 @@ registered_scripts = [
 'quick_hash',
 'convert_epoch_time',
 'file_hash',
-'curl_to_requests_ui'
+#'curl_to_requests'
 ]
 
 
