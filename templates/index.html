@@ -1,0 +1,25 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap/fixes.html" as fixes %}
+{% include 'navbar.html' %}
+{% block content %}
+
+<div class="main_body">
+
+<p>Scrypture is a web application wrapper around Python scripts, implemented by adding a WebAPI class to almost any existing Python module. Every Scrypture module can be downloaded directly from this site and may be run on the command line or imported as a module.</p>
+
+  {% for script in scripts %}
+  <h2>{{ script }}</h2>
+  Web Interface: <a href="/s/{{ script }}">{{ script }}</a>
+  <br />
+  Download: <a href="/dl/{{ script }}.py">{{ script }}.py</a>
+  <pre>{{ scripts[script].__doc__ }}</pre>
+  {% endfor %}
+
+</div>
+{% endblock %}
+
+{% block head %}
+{{super()}}
+{{fixes.ie8()}}
+{% endblock %}

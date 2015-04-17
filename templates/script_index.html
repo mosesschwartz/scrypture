@@ -1,0 +1,17 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap/fixes.html" as fixes %}
+{% include 'navbar.html' %}
+{% block content %}
+<div class="main_body">
+  <h1>{{ module_name }}</h1>
+   <a href="/dl/{{ module_name }}.py">Download {{ module_name }}.py</a>
+  <pre>{{ scripts[module_name].__doc__ }}</pre>
+  {{ wtf.quick_form(form, method='post', enctype='multipart/form-data', button_map={'submit_button': 'primary'}) }}
+</div>
+{% endblock %}
+
+{% block head %}
+{{super()}}
+{{fixes.ie8()}}
+{% endblock %}

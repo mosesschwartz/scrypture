@@ -1,0 +1,17 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap/fixes.html" as fixes %}
+{% include 'navbar.html' %}
+{% block content %}
+<div class="main_body">
+  <h1>{{ module_name }}</h1>
+  <pre>ERROR: {{ error_message }}</pre>
+  <pre>{{ scripts[module_name].__doc__ }}</pre>
+</div>
+{% endblock %}
+
+{% block head %}
+{{super()}}
+{{fixes.ie8()}}
+{% endblock %}
+
