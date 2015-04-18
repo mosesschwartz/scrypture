@@ -1,28 +1,8 @@
 <title>Scrypture :: {{ module_name }}</title>
 
-<link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
-<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<link rel="shortcut icon" href="/static/scrypture.ico" type="image/x-icon">
 
-<style>
-  body {
-    padding-top: 5px;
-  }
-  .main_body {
-    padding: 0px 15px;
-    text-align: left;
-  }
-
-  .navbar-brand {
-        padding: 0;
-    }
-
-    .navbar-brand img {
-        margin-top: -15px;
-        margin-left: 5px;
-    }
-</style>
-
-<nav class="navbar navbar-inverse">
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container-fluid">
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -31,19 +11,24 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="/"><img src='/static/scrypture_small.png'/></a>
+      <a class="navbar-brand" href="/"><img height=48 width=48 src='/static/scrypture_logo.png'/></a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
       {{ make_navbar_links() }}
+      <li><a href="/script_index">Index</a></li>
       </ul>
+
       <ul class="nav navbar-nav navbar-right">
-        <li><a href="https://www.github.com/mosesschwartz/scrypture/blob/master/API_README.md">API Documentation</a></li>
-        <li><a href="https://www.github.com/mosesschwartz/scrypture">View on GitHub</a></li>
+        <li><a href="https://www.github.com/mosesschwartz/scrypture/blob/master/API_README.md">API</a></li>
+        <li><a href="https://www.github.com/mosesschwartz/scrypture">GitHub</a></li>
       </ul>
-    </div><!--/.nav-collapse -->
-  </div><!--/.container-fluid -->
+    </div>
+  </div>
 </nav>
 
+<br />
+<br />
+<br />
 
-</nav>
+

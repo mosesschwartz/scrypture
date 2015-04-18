@@ -1,25 +1,64 @@
-{% extends "bootstrap/base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
-{% import "bootstrap/fixes.html" as fixes %}
-{% include 'navbar.html' %}
+{% extends "scrypture_base.html" %}
 {% block content %}
 
-<div class="main_body">
+<div class="container">
+<div class="row">
+<div class="col-md-1"></div>
+<div class="col-md-10">
 
-<p>Scrypture is a web application wrapper around Python scripts, implemented by adding a WebAPI class to almost any existing Python module. Every Scrypture module can be downloaded directly from this site and may be run on the command line or imported as a module.</p>
+<div class="jumbotron">
+  <h2>Welcome to Scrypture</h2>
+  <p>Scrypture makes it easy to put Python scripts online. Simply add a class to your Python script and Scrypture will automatically serve your script through the web interface and API.</p>
 
-  {% for script in scripts %}
-  <h2>{{ script }}</h2>
-  Web Interface: <a href="/s/{{ script }}">{{ script }}</a>
-  <br />
-  Download: <a href="/dl/{{ script }}.py">{{ script }}.py</a>
-  <pre>{{ scripts[script].__doc__ }}</pre>
-  {% endfor %}
+  <p>Here's how easy it is:</p>
+  <pre><code class="python">"""b64encode.py: encode or decode base64 strings"""
+import base64
+def b64encode(s):
+    return base64.encodestring(s)
+def b64decode(s):
+    return repr(str(base64.decodestring(s)))
+
+### WebAPI ###
+import webapi
+class WebAPI(webapi.WebAPI):
+    input_text = webapi.text_input('Input')
+    encode_or_decode = webapi.radio_field('What do you want to do?',
+                                 choices=[('encode', 'encode'),
+                                          ('decode', "decode")],
+                                 default='encode')
+    submit_button = webapi.submit_button('Convert')
+
+    def run(self, form_input):
+        input_text = form_input['input_text']
+        encode_or_decode = form_input['encode_or_decode']
+        if encode_or_decode == 'encode':
+            output = b64encode(input_text)
+        else:
+            output = b64decode(input_text)
+        return {'output_type' : 'simple',
+                'output' : output}</code></pre>
+
+
+  <p>This script can be accessed in the usual ways:</p>
+  <pre><code class="bash">~$ curl http://www.scrypture.net/api/v1/b64encode \
+-X GET --data "encode_or_decode=\"encode\"&input_text=\"Hello, World\""
+
+{"output_type": "simple", "output": "SGVsbG8sIFdvcmxk\n"}</code></pre>
+
+  <p>Or through the auto-generated Python API:</p>
+  <pre><code class="python">>>> import scrypture_api
+>>> s = scrypture_api.ScryptureAPI()
+>>> print s.b64encode(encode_or_decode='encode', input_text="Hello, World")
+{u'output': u'SGVsbG8sIFdvcmxk\n', u'output_type': u'simple'}
+</code></pre>
+
+  <p>And of course, through the web interface:</p>
+  <p><a class="btn btn-primary btn-lg" href="/s/b64encode" role="button">Try the Web Interface</a></p>
 
 </div>
-{% endblock %}
 
-{% block head %}
-{{super()}}
-{{fixes.ie8()}}
+
+</div>
+<div class="col-md-1"></div>
+
 {% endblock %}

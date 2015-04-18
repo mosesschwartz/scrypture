@@ -1,13 +1,4 @@
-{% extends "bootstrap/base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
-{% import "bootstrap/fixes.html" as fixes %}
-{% include 'navbar.html' %}
-
-{% block styles %}
-{{super()}}
-<link rel="stylesheet"
-      href="{{url_for('.static', filename='jquery.dynatable.css')}}">
-{% endblock %}
+{% extends "scrypture_base.html" %}
 
 {% block content %}
 
@@ -19,40 +10,39 @@
 .key { color: darkred; }
 </style>
 
-<div class="main_body">
+<div class="container">
+<div class="row">
+<div class="col-md-1"></div>
+<div class="col-md-10">
+
   <h1>{{ module_name }}</h1>
 
-<div role="tabpanel">
+  <div role="tabpanel">
 
-  <!-- Nav tabs -->
-  <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active"><a href="#table" aria-controls="table" role="tab" data-toggle="tab">Table</a></li>
-    <li role="presentation"><a href="#json" aria-controls="json" role="tab" data-toggle="tab">JSON</a></li>
-    <li role="presentation"><a href="#simpletext" aria-controls="simpletext" role="tab" data-toggle="tab">Text</a></li>
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+      <li role="presentation" class="active"><a href="#table" aria-controls="table" role="tab" data-toggle="tab">Table</a></li>
+      <li role="presentation"><a href="#json" aria-controls="json" role="tab" data-toggle="tab">JSON</a></li>
+      <li role="presentation"><a href="#simpletext" aria-controls="simpletext" role="tab" data-toggle="tab">Text</a></li>
 
-  </ul>
+    </ul>
 
-  <!-- Tab panes -->
-  <div class="tab-content">
-    <div role="tabpanel" class="tab-pane active" id="table">
-      <table id="output-table" class="table table-bordered"></table>
+    <!-- Tab panes -->
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane active" id="table">
+        <table id="output-table" class="table table-bordered"></table>
+      </div>
+      <div role="tabpanel" class="tab-pane" id="json">
+        <pre id="json_pretty"></pre>
+      </div>
+      <div role="tabpanel" class="tab-pane" id="simpletext">
+        <pre id="output_json">{{ output }}</pre>
+      </div>
+
     </div>
-    <div role="tabpanel" class="tab-pane" id="json">
-      <pre id="json_pretty"></pre>
-    </div>
-    <div role="tabpanel" class="tab-pane" id="simpletext">
-      <pre id="output_json">{{ output }}</pre>
-    </div>
-
   </div>
-
 </div>
-
-
-
-
-</div>
-
+<div class="col-md-1"></div>
 {% endblock %}
 
 {% block scripts %}
@@ -122,10 +112,4 @@ function addAllColumnHeaders(ScryptureOutput)
 buildHtmlTable()
 
 </script>
-
-{% endblock %}
-
-{% block head %}
-{{super()}}
-{{fixes.ie8()}}
 {% endblock %}
