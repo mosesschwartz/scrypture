@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 class ScryptureAPI():
     def __init__(self,
-             base_url='http://localhost:5000',
+             base_url='http://www.scrypture.net/api/v1/',
              username=None,
              password=None,
              interactive_password=False):
