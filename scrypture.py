@@ -44,10 +44,17 @@ registered_scripts = [
 
 @app.route('/', methods=['GET'])
 def index():
-    '''Return the index page listing all available modules'''
+    '''Return the main page'''
     return render_template('index.html',
                            scripts=registered_modules,
                            module_name='main')
+
+
+@app.route('/script_index', methods=['GET'])
+def script_listing():
+    '''Return the index page listing all available modules'''
+    return render_template('script_listing.html',
+                           scripts=registered_modules)
 
 @app.route('/whoami', methods=['GET'])
 def test():
@@ -188,6 +195,7 @@ def utility_processor():
     def make_navbar_links():
         nav_link_top = '''
         <li class="dropdown">
+
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Scripts<span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">'''
         nav_link_bottom = '''
@@ -282,14 +290,9 @@ for module_name, module in registered_modules.items():
     api_class.module_fields = module_fields
 
     for field_name, wtf_field_type, input_type in api_class.module_fields:
-        if wtf_field_type == 'TextAreaField':
-            api_class.module_parser.add_argument(field_name,
-                                type=wtf_field_types[wtf_field_type],
-                                required=True,)
-        else:
-            api_class.module_parser.add_argument(field_name,
-                                type=wtf_field_types[wtf_field_type],
-                                required=True)
+        api_class.module_parser.add_argument(field_name,
+                            type=wtf_field_types[wtf_field_type],
+                            required=True)
     api_classes[module_name] = api_class
 
 for module_name in registered_modules:
