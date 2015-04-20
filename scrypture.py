@@ -33,12 +33,22 @@ registered_scripts = [
 'json_to_csv',
 'b64encode',
 'enumerate_ips',
-'table_test',
 'quick_hash',
 'convert_epoch_time',
 'file_hash',
 'silly_demo',
-#'curl_to_requests'
+'curl_to_requests',
+'text_to_upper',
+'text_to_lower',
+'camelcase_to_underscores',
+'js_pretty_print',
+'json_pretty_print',
+'shuffle_words',
+'shuffle_characters',
+'reverse_words',
+'reverse_characters',
+'uniq',
+
 ]
 
 
@@ -54,6 +64,12 @@ def index():
 def script_listing():
     '''Return the index page listing all available modules'''
     return render_template('script_listing.html',
+                           scripts=registered_modules)
+
+@app.route('/about', methods=['GET'])
+def about():
+    '''About page'''
+    return render_template('about.html',
                            scripts=registered_modules)
 
 @app.route('/whoami', methods=['GET'])
