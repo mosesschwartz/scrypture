@@ -6,11 +6,11 @@ One per line.
 """
 
 from __future__ import print_function
-import datetime
+from datetime import datetime
 
 def convert_epoch_time(t):
     try:
-        return datetime.datetime.fromtimestamp(int(t)).strftime('%Y-%m-%d %H:%M:%S')
+        return datetime.utcfromtimestamp(int(t)).strftime('%Y-%m-%d %H:%M:%S')
     except:
         return "Could not convert. Is this a valid timestamp?"
 

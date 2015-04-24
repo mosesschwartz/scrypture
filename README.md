@@ -1,17 +1,12 @@
-script_utils
+Scrypture
 ============
-script\_utils is a web application wrapper around Python scripts, implemented by adding a WebAPI class to almost any existing Python module. Every script_utils module can be downloaded directly from this site and may be run on the command line or imported as a module.
+Scrypture makes it easy to put Python scripts online. Simply add a class to your Python script and Scrypture will automatically serve your script through the web interface and API.
 
-This is version 2.0, and it's slightly less barebones than version 1.0. New additions are:
- * HTTP (REST) API
- * Python API
- * Scripts can be created with the API and hosted on script_utils, allowing the creation of more complex workflows
-
-To install:
+To install a dev environment:
 
 Use GitHub client or git to clone to local directory
 ```Shell
-cd $GITHUB/script_utils
+cd $GITHUB/scrypture
 
 # If you don't have virtualenv installed, do this:
 sudo easy_install pip
@@ -29,6 +24,6 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Start script_utils with a local webserver
-python script_utils.py
+python scrypture.py
 ```
-Point a web browser at localhost:5000, and you're done!
+Point a web browser at http://localhost:5000, and you're done!

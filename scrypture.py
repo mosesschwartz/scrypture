@@ -1,4 +1,16 @@
-from flask import Flask, render_template, request, send_from_directory, Markup, jsonify, send_file
+"""
+Scrypture makes it easy to put Python scripts online. Simply add a class to
+your Python script and Scrypture will automatically serve your script through
+the web interface and API.
+"""
+
+from flask import Flask, \
+                  render_template, \
+                  request, \
+                  send_from_directory, \
+                  Markup, \
+                  jsonify, \
+                  send_file
 from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
 from flask.ext.restful import reqparse, abort, Api, Resource
@@ -15,7 +27,7 @@ import werkzeug.datastructures
 from werkzeug import secure_filename
 import hashlib
 
-logging.basicConfig(stream=sys.stderr,level=logging.DEBUG)
+logging.basicConfig(stream=sys.stderr, level=logging.ERROR)
 
 app = Flask(__name__)
 api = Api(app)
@@ -28,28 +40,25 @@ and add the name to registered_scripts below. The loading code
 below will automagically find and import the script and put it into the
 registered_modules dictionary.
 """
-registered_scripts = [
-'nmap_to_csv',
-'json_to_csv',
-'b64encode',
-'enumerate_ips',
-'quick_hash',
-'convert_epoch_time',
-'file_hash',
-'silly_demo',
-'curl_to_requests',
-'text_to_upper',
-'text_to_lower',
-'camelcase_to_underscores',
-'js_pretty_print',
-'json_pretty_print',
-'shuffle_words',
-'shuffle_characters',
-'reverse_words',
-'reverse_characters',
-'uniq',
-
-]
+registered_scripts = ['nmap_to_csv',
+                      'json_to_csv',
+                      'b64encode',
+                      'enumerate_ips',
+                      'quick_hash',
+                      'convert_epoch_time',
+                      'file_hash',
+                      'silly_demo',
+                      'curl_to_requests',
+                      'text_to_upper',
+                      'text_to_lower',
+                      'camelcase_to_underscores',
+                      'js_pretty_print',
+                      'json_pretty_print',
+                      'shuffle_words',
+                      'shuffle_characters',
+                      'reverse_words',
+                      'reverse_characters',
+                      'uniq']
 
 
 @app.route('/', methods=['GET'])
@@ -75,7 +84,6 @@ def about():
 @app.route('/whoami', methods=['GET'])
 def test():
     '''Shows diagnostic information'''
-    import pprint
     return '<br>'.join(str(k)+' = '+str(v) for k,v in request.environ.items())
 
 @app.route('/dl/<script_file_name>', methods=['GET'])
@@ -94,21 +102,24 @@ def download_script(script_file_name):
 
 @app.route('/dl/<file_id>/<path:file_name>')
 def download_file(file_id, file_name):
+    '''Download a file from UPLOAD_FOLDER'''
     extracted_out_dir = os.path.join(app.config['UPLOAD_FOLDER'], file_id)
-    return send_file(os.path.join(extracted_out_dir,file_name))
+    return send_file(os.path.join(extracted_out_dir, file_name))
 
 @app.errorhandler(404)
-def page_not_found(e):
+def page_not_found(error):
+    '''404 error handler'''
     return render_template('error.html',
                            scripts=registered_modules,
-                           module_name=e,
+                           module_name=error,
                            error_message='Module not found'), 404
 
 @app.errorhandler(500)
-def page_not_found(e):
+def server_error(error):
+    '''500 error handler'''
     return render_template('error.html',
                            scripts=registered_modules,
-                           module_name=e,
+                           module_name=error,
                            error_message='An error occurred! Sorry.'), 500
 
 @app.route('/s/<module_name>', methods=['GET'])
@@ -157,7 +168,6 @@ def run_script(module_name):
     except Exception:
         if app.config['LOCAL_DEV'] == True:
             raise # pass along to be caught by Flask's debugger
-        import traceback
         return render_template('error.html',
                                scripts=registered_modules,
                                module_name=module_name,
@@ -217,13 +227,12 @@ def utility_processor():
         nav_link_bottom = '''
           </ul>
         </li>'''
-        packages = set([m.__package__ for k,m in registered_modules.items()])
+        packages = set([m.__package__ for k, m in registered_modules.items()])
         nav_links = ''
         for package in packages:
             nav_links += '''
             <li class="divider"></li>
             <li class="dropdown-header">{}</li>'''.format(package)
-
             for key,module in registered_modules.items():
                 if module.__package__ == package:
                     nav_links += '''
@@ -332,4 +341,4 @@ api.add_resource(ScriptDocumentation, '/api/v1/docs')
 
 
 if __name__ == '__main__':
-    app.run(threaded=True,host='0.0.0.0',debug=True)
+    app.run(threaded=True, host='0.0.0.0', debug=True)

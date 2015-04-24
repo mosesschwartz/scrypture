@@ -9,15 +9,20 @@ logging.basicConfig(level=logging.DEBUG)
 
 class ScryptureAPI():
     def __init__(self,
-             base_url='http://www.scrypture.net/api/v1/',
+             base_url=config.API_BASE_URL,
              username=None,
              password=None,
-             interactive_password=False):
+             interactive_password=False,
+             pass_auth=False):
         self.password = password
         self.username = username
         if interactive_password:
             import getpass
             self.password = getpass.getpass()
+        if pass_auth != False:
+            self.auth = pass_auth
+        else:
+            self.auth = requests.auth.HTTPBasicAuth(self.username, self.password)
         self.BASE_URL = base_url
         self.api_doc = self.get_api_docs()
         self.uris = {}
@@ -31,7 +36,10 @@ class ScryptureAPI():
                     json_kwargs = {kw : json.dumps(arg)
                                   for kw,arg in kwargs.items()}
                     uri = self._generate_uri(module, **json_kwargs)
-                    return self.get_parse(uri)
+                    output = self.get_parse(uri)
+                    if output != '':
+                        output['output'] = json.loads(output['output'])
+                    return  output
                 return api_func
 
             api_func = make_api_func(module)
@@ -54,14 +62,14 @@ class ScryptureAPI():
         logging.debug("Requesting URL: "+str(urlparse.urljoin(self.BASE_URL, uri)))
         return requests.get(urlparse.urljoin(self.BASE_URL, uri),
             params=params, verify=False,
-            auth=requests.auth.HTTPBasicAuth(self.username, self.password))
+            auth=self.auth)
 
     def post(self, uri, params={}, data={}):
         '''A generic method to make POST requests on the given URI.'''
         return requests.post(
             urlparse.urljoin(UmbrellaAPI.BASE_URL, uri),
             params=params, data=data, headers=self._auth_header, verify=False,
-            auth=requests.auth.HTTPBasicAuth(self.username, self.password))
+            auth=self.auth)
 
     def _request_parse(self, method, *args):
         r = method(*args)
@@ -79,3 +87,7 @@ class ScryptureAPI():
         '''
         return self._request_parse(self.post, uri, params, data)
 
+
+
+if __name__ == '__main__':
+    foo = ScryptureAPI()
