@@ -40,25 +40,25 @@ and add the name to registered_scripts below. The loading code
 below will automagically find and import the script and put it into the
 registered_modules dictionary.
 """
-registered_scripts = ['nmap_to_csv',
-                      'json_to_csv',
-                      'b64encode',
-                      'enumerate_ips',
-                      'quick_hash',
-                      'convert_epoch_time',
-                      'file_hash',
-                      'silly_demo',
-                      'curl_to_requests',
-                      'text_to_upper',
-                      'text_to_lower',
-                      'camelcase_to_underscores',
-                      'js_pretty_print',
-                      'json_pretty_print',
-                      'shuffle_words',
-                      'shuffle_characters',
-                      'reverse_words',
-                      'reverse_characters',
-                      'uniq']
+registered_scripts = ['Network.nmap_to_csv',
+                      'Utils.json_to_csv',
+                      'Utils.b64encode',
+                      'Network.enumerate_ips',
+                      'Security.quick_hash',
+                      'Utils.convert_epoch_time',
+                      'Security.file_hash',
+                      'Demos.silly_demo',
+                      'Utils.curl_to_requests',
+                      'Text.text_to_upper',
+                      'Text.text_to_lower',
+                      'Text.camelcase_to_underscores',
+                      'Text.js_pretty_print',
+                      'Utils.json_pretty_print',
+                      'Text.shuffle_words',
+                      'Text.shuffle_characters',
+                      'Text.reverse_words',
+                      'Text.reverse_characters',
+                      'Text.uniq']
 
 
 @app.route('/', methods=['GET'])
@@ -335,10 +335,7 @@ class ScriptDocumentation(Resource):
 
 api.add_resource(ScriptDocumentation, '/api/v1/docs')
 
-
-
-
-
+print 'Scrypture started at http://localhost:5000'
 
 if __name__ == '__main__':
     app.run(threaded=True, host='0.0.0.0', debug=True)
