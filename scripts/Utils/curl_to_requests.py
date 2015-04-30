@@ -1,5 +1,5 @@
 '''Converts a cURL command to code for Python Requests'''
-import curl_to_requests.curl_to_requests as curl_to_requests
+import curl2requests.curl_to_requests as curl_to_requests
 
 import webapi
 class WebAPI(webapi.WebAPI):
