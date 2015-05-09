@@ -21,24 +21,35 @@
 
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" role="tablist">
-      <li role="presentation" class="active"><a href="#table" aria-controls="table" role="tab" data-toggle="tab">Table</a></li>
+      <li role="presentation" class="active"><a href="#HTML" aria-controls="HTML" role="tab" data-toggle="tab">HTML</a></li>
       <li role="presentation"><a href="#json" aria-controls="json" role="tab" data-toggle="tab">JSON</a></li>
-      <li role="presentation"><a href="#simpletext" aria-controls="simpletext" role="tab" data-toggle="tab">Text</a></li>
+      <li role="presentation"><a href="#csv" aria-controls="csv" role="tab" data-toggle="tab">CSV</a></li>
+      <li role="presentation"><a href="#trac" aria-controls="trac" role="tab" data-toggle="tab">Trac</a></li>
+      <li role="presentation"><a href="#yaml" aria-controls="yaml" role="tab" data-toggle="tab">YAML</a></li>
+      <li role="presentation"><a href="#python" aria-controls="python" role="tab" data-toggle="tab">Python</a></li>
 
     </ul>
 
     <!-- Tab panes -->
     <div class="tab-content">
-      <div role="tabpanel" class="tab-pane active" id="table">
-        <table id="output-table" class="table table-bordered"></table>
+      <div role="tabpanel" class="tab-pane active" id="HTML">
+        {{ output | to_html(headers) | safe}}
       </div>
       <div role="tabpanel" class="tab-pane" id="json">
-        <pre id="json_pretty"></pre>
+        <pre id="output_json" onClick="selectText('output_json')">{{ output | to_json(headers) | safe}}</pre>
       </div>
-      <div role="tabpanel" class="tab-pane" id="simpletext">
-        <pre id="output_json">{{ output }}</pre>
+      <div role="tabpanel" class="tab-pane" id="csv">
+        <pre id="output_csv"  onClick="selectText('output_csv')">{{ output | to_csv(headers) | safe}}</pre>
       </div>
-
+      <div role="tabpanel" class="tab-pane" id="trac">
+        <pre id="output_trac" onClick="selectText('output_trac')">{{ output | to_trac(headers) | safe}}</pre>
+      </div>
+      <div role="tabpanel" class="tab-pane" id="yaml">
+        <pre id="output_yaml" onClick="selectText('output_yaml')">{{ output | to_yaml(headers) | safe}}</pre>
+      </div>
+      <div role="tabpanel" class="tab-pane" id="python">
+        <pre id="output_python" onClick="selectText('output_python')">{{ output | to_repr(headers) | safe}}</pre>
+      </div>
     </div>
   </div>
 </div>
@@ -48,7 +59,20 @@
 {% block scripts %}
 {{super()}}
 <script>
+function selectText(containerid) {
+    if (document.selection) {
+        var range = document.body.createTextRange();
+        range.moveToElementText(document.getElementById(containerid));
+        range.select();
+    } else if (window.getSelection()) {
+        var range = document.createRange();
+        range.selectNode(document.getElementById(containerid));
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+    }
+}
 
+/*
 function syntaxHighlight(json) {
     json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
@@ -87,29 +111,42 @@ function buildHtmlTable() {
   }
 }
 
-// Adds a header row to the table and returns the set of columns.
-// Need to do union of keys from all records as some records may not contain
-// all records
-function addAllColumnHeaders(ScryptureOutput)
-{
-   var columnSet = [];
-   var headerTr$ = $('<tr/>');
-
-   for (var i = 0 ; i < ScryptureOutput.length ; i++) {
-       var rowHash = ScryptureOutput[i];
-       for (var key in rowHash) {
-           if ($.inArray(key, columnSet) == -1){
-               columnSet.push(key);
-               headerTr$.append($('<th/>').html(key));
-           }
-       }
-   }
+function addAllColumnHeaders(ScryptureOutput) {
+    var columnSet = {{ headers | tojson }};
+    var headerTr$ = $('<tr/>');
+    for (var i = 0 ; i < {{headers | length}} ; i++) {
+        var header = columnSet[i];
+        headerTr$.append($('<th/>').html(header));
+    }
    $("#output-table").append(headerTr$);
 
    return columnSet;
 }
+*/
 
-buildHtmlTable()
+// Adds a header row to the table and returns the set of columns.
+// Need to do union of keys from all records as some records may not contain
+// all records
+// function addAllColumnHeaders(ScryptureOutput)
+// {
+//    var columnSet = [];
+//    var headerTr$ = $('<tr/>');
+//
+//    for (var i = 0 ; i < ScryptureOutput.length ; i++) {
+//        var rowHash = ScryptureOutput[i];
+//        for (var key in rowHash) {
+//            if ($.inArray(key, columnSet) == -1){
+//                columnSet.push(key);
+//                headerTr$.append($('<th/>').html(key));
+//            }
+//        }
+//    }
+//    $("#output-table").append(headerTr$);
+//
+//    return columnSet;
+// }
+
+//buildHtmlTable()
 
 </script>
 {% endblock %}

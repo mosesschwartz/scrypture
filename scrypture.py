@@ -27,7 +27,7 @@ import werkzeug.datastructures
 from werkzeug import secure_filename
 import hashlib
 
-logging.basicConfig(stream=sys.stderr, level=logging.ERROR)
+logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
 
 app = Flask(__name__)
 api = Api(app)
@@ -192,10 +192,10 @@ def run_script(module_name):
                                module_name=module_name)
     elif result['output_type'] == 'table':
         return render_template('result_table.html',
-                               output=json.dumps(result['output']),
+                               output=result['output'],
                                scripts=registered_modules,
                                module_name=module_name,
-                               headers=json.dumps(result['headers']))
+                               headers=result['headers'])
 
 
 # Field documentation at:
@@ -215,6 +215,57 @@ wtf_field_types = {'BooleanField' : str,
                    'SelectMultipleField' : str,
                    'TextAreaField' : str,
                    'TextField' : str}
+
+import tablib
+from collections import OrderedDict
+
+def order_by_header(table, headers):
+    '''Convert a list of dicts to a list or OrderedDicts ordered by headers'''
+    return [OrderedDict(sorted(d.items(), key=lambda x:headers.index(x[0])))
+            for d in table]
+
+def load_dataset(table, headers):
+    data = tablib.Dataset()
+    data.headers = headers
+    data.dict = order_by_header(table, headers)
+    return data
+
+@app.template_filter('to_json')
+def to_json(table, headers):
+    data = load_dataset(table, headers)
+    return json.dumps(json.loads(data.json), indent=4, separators=(',', ': '))
+
+@app.template_filter('to_html')
+def to_html(table, headers):
+    data = load_dataset(table, headers)
+    html = data.html
+    # Inject ID and styling
+    html = html.replace('<table>',
+        '<table id="output-table" class="table table-bordered">')
+    return html
+
+@app.template_filter('to_csv')
+def to_csv(table, headers):
+    data = load_dataset(table, headers)
+    return data.csv
+
+@app.template_filter('to_yaml')
+def to_yaml(table, headers):
+    data = load_dataset(table, headers)
+    return data.yaml
+
+@app.template_filter('to_repr')
+def to_repr(table, headers):
+    return repr(table)
+
+@app.template_filter('to_trac')
+def to_trac(table, headers):
+    h = ' || '.join(['{}'.format(h) for h in headers])
+    wikiformatting = '|| {} ||\n'.format(h)
+    for row in table:
+        r = ' || '.join(['{}'.format(row[h]) for h in headers])
+        wikiformatting += '|| {} ||\n'.format(r)
+    return wikiformatting
 
 @app.context_processor
 def utility_processor():
@@ -239,7 +290,6 @@ def utility_processor():
             <li><a href="/s/{script}">{script}</a></li>'''.format(script=key)
         return Markup(nav_link_top+nav_links+nav_link_bottom)
     return dict(make_navbar_links=make_navbar_links)
-
 
 
 registered_modules = {}
