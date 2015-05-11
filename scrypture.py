@@ -31,35 +31,19 @@ logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
 
 app = Flask(__name__)
 api = Api(app)
-AppConfig(app, 'config.py')
+
+# Try loading a local_config.py file
+try:
+    AppConfig(app, 'local_config.py')
+# If it isn't there, import config.py
+# This is done to make it harder to lose local config changes when updating
+except ImportError:
+    AppConfig(app, 'config.py')
+
 Bootstrap(app)
 
-"""
-To add another script, place the file inside the scripts package
-and add the name to registered_scripts below. The loading code
-below will automagically find and import the script and put it into the
-registered_modules dictionary.
-"""
-registered_scripts = ['Network.nmap_to_csv',
-                      'Utils.json_to_csv',
-                      'Utils.b64encode',
-                      'Network.enumerate_ips',
-                      'Security.quick_hash',
-                      'Utils.convert_epoch_time',
-                      'Security.file_hash',
-                      'Demos.silly_demo',
-                      'Utils.curl_to_requests',
-                      'Text.text_to_upper',
-                      'Text.text_to_lower',
-                      'Text.camelcase_to_underscores',
-                      'Utils.js_pretty_print',
-                      'Utils.json_pretty_print',
-                      'Text.shuffle_words',
-                      'Text.shuffle_characters',
-                      'Text.reverse_words',
-                      'Text.reverse_characters',
-                      'Text.uniq']
-
+# Load list of registered scripts
+registered_scripts = app.config['REGISTERED_SCRIPTS']
 
 @app.route('/', methods=['GET'])
 def index():
