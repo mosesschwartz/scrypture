@@ -1,4 +1,4 @@
-from scrypture import app
+from scrypture.scrypture import app
 import logging
 import sys
 
