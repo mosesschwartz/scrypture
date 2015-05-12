@@ -5,11 +5,17 @@ import json
 import logging
 import urlparse
 
+try:
+    from scrypture import config
+    API_BASE_URL = config.API_BASE_URL
+except ImportError:
+    API_BASE_URL = 'http://localhost:5000/'
+
 logging.basicConfig(level=logging.DEBUG)
 
 class ScryptureAPI():
     def __init__(self,
-             base_url=config.API_BASE_URL,
+             base_url=API_BASE_URL,
              username=None,
              password=None,
              interactive_password=False,
