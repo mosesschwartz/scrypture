@@ -27,23 +27,48 @@ import werkzeug.datastructures
 from werkzeug import secure_filename
 import hashlib
 
-logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
-
 app = Flask(__name__)
 api = Api(app)
 
 # Try loading a local_config.py file
-try:
+if os.path.isfile('local_config.py'):
     AppConfig(app, 'local_config.py')
 # If it isn't there, import config.py
 # This is done to make it harder to lose local config changes when updating
-except ImportError:
+else:
     AppConfig(app, 'config.py')
 
 Bootstrap(app)
 
+
+# Add scrypture package and scripts package to the path before importing
+# so everything can import everything else regardless of package
+scrypture_dir = os.path.realpath(
+                     os.path.abspath(
+                       os.path.split(
+                         inspect.getfile( inspect.currentframe() ))[0]))
+
+if scrypture_dir not in sys.path:
+    sys.path.insert(0, scrypture_dir)
+
+#scripts_dir = app.config['SCRIPTS_DIR']
+#if scripts_dir not in sys.path:
+#    sys.path.insert(0, scripts_dir)
+
+#cmd_subfolder = os.path.realpath(
+#                  os.path.abspath(
+#                    os.path.join(
+#                      os.path.split(
+#                        inspect.getfile(
+#                          inspect.currentframe()))[0],"scripts")))
+#if cmd_subfolder not in sys.path:
+#    sys.path.insert(0, cmd_subfolder)
+
+
+
 # Load list of registered scripts
 registered_scripts = app.config['REGISTERED_SCRIPTS']
+registered_modules = {}
 
 @app.route('/', methods=['GET'])
 def index():
@@ -182,23 +207,6 @@ def run_script(module_name):
                                headers=result['headers'])
 
 
-# Field documentation at:
-# http://wtforms.simplecodes.com/docs/0.6/fields.html#basic-fields
-
-wtf_field_types = {'BooleanField' : str,
-                   'DateField' : str,
-                   'DateTimeField' : str,
-                   'DecimalField' : str,
-                   'FileField' : str,
-                   'FloatField' : str,
-                   'HiddenField' : str,
-                   'IntegerField' : str,
-                   'PasswordField' : str,
-                   'RadioField' : str,
-                   'SelectField' : str,
-                   'SelectMultipleField' : str,
-                   'TextAreaField' : str,
-                   'TextField' : str}
 
 import tablib
 from collections import OrderedDict
@@ -276,41 +284,27 @@ def utility_processor():
     return dict(make_navbar_links=make_navbar_links)
 
 
-registered_modules = {}
-
-# Add scrypture package and scripts package to the path before importing
-# so everything can import everything else regardless of package
-
-cmd_folder = os.path.realpath(
-               os.path.abspath(
-                 os.path.split(
-                   inspect.getfile( inspect.currentframe() ))[0]))
-
-if cmd_folder not in sys.path:
-    sys.path.insert(0, cmd_folder)
-
-cmd_subfolder = os.path.realpath(
-                  os.path.abspath(
-                    os.path.join(
-                      os.path.split(
-                        inspect.getfile(
-                          inspect.currentframe()))[0],"scripts")))
-if cmd_subfolder not in sys.path:
-    sys.path.insert(0, cmd_subfolder)
-
-for script in registered_scripts:
-    try:
-        s = import_module('.'+script, package='scripts')
-        s.package = s.__name__.split('.')[1]
-        script_name = script.split('.')[-1] #remove package from script name
-        registered_modules[script_name] = s
-    except Exception as e:
-        logging.warning('Could not import '+str(script)+': '+str(e.message))
-        logging.debug(str(traceback.format_exc()))
-        continue
-
 
 ### Set up the Scrypture API below ###
+
+# Field documentation at:
+# http://wtforms.simplecodes.com/docs/0.6/fields.html#basic-fields
+
+wtf_field_types = {'BooleanField' : str,
+                   'DateField' : str,
+                   'DateTimeField' : str,
+                   'DecimalField' : str,
+                   'FileField' : str,
+                   'FloatField' : str,
+                   'HiddenField' : str,
+                   'IntegerField' : str,
+                   'PasswordField' : str,
+                   'RadioField' : str,
+                   'SelectField' : str,
+                   'SelectMultipleField' : str,
+                   'TextAreaField' : str,
+                   'TextField' : str}
+
 api_classes = {}
 
 parser = reqparse.RequestParser()
@@ -369,7 +363,20 @@ class ScriptDocumentation(Resource):
 
 api.add_resource(ScriptDocumentation, '/api/v1/docs')
 
-print 'Scrypture started at http://localhost:5000'
 
-if __name__ == '__main__':
-    app.run(threaded=True, host='0.0.0.0', debug=True)
+
+for script in registered_scripts:
+    try:
+        s = import_module('.'+script, package='scripts')
+        s.package = s.__name__.split('.')[1]
+        script_name = script.split('.')[-1] #remove package from script name
+        registered_modules[script_name] = s
+    except Exception as e:
+        logging.warning('Could not import '+str(script)+': '+str(e.message))
+        logging.debug(str(traceback.format_exc()))
+        continue
+
+
+
+
+
