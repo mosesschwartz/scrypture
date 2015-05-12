@@ -8,8 +8,8 @@ def read(*paths):
         return f.read()
 
 setup(
-    name='pem',
-    version='0.1.0',
+    name='scrypture',
+    version='0.2.0',
     description='Automatically serve Python scripts through a web interface and REST API.',
     long_description=(read('README.md')),
     url='http://github.com/mosesschwartz/scrypture',
