@@ -64,7 +64,7 @@ if __name__ == '__main__':
 
 ### WebAPI ###
 
-import webapi
+from scrypture import webapi
 class WebAPI(webapi.WebAPI):
     json_input = webapi.text_input('JSON')
     submit_button = webapi.submit_button('Convert')

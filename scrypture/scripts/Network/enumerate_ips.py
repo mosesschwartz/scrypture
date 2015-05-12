@@ -32,7 +32,7 @@ if __name__ == '__main__':
     main()
 
 ### WebAPI ###
-import webapi
+from scrypture import webapi
 class WebAPI(webapi.WebAPI):
     multi_input = webapi.list_input('Newline delimited indicators')
     submit_button = webapi.submit_button('Enumerate!')

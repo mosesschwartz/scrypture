@@ -12,7 +12,7 @@ import random
 
 
 ### WebAPI ###
-import webapi
+from scrypture import webapi
 class WebAPI(webapi.WebAPI):
     submit_button = webapi.submit_button('Tabulate!')
 

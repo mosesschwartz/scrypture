@@ -11,7 +11,7 @@ def uniq(lines):
 
 ### WebAPI ###
 
-import webapi
+from scrypture import webapi
 class WebAPI(webapi.WebAPI):
     input_lines = webapi.text_input('Lines')
     submit_button = webapi.submit_button('Convert')

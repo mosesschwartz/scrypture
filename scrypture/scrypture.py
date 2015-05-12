@@ -42,7 +42,7 @@ else:
 Bootstrap(app)
 
 
-# Add scrypture package and scripts package to the path before importing
+# Add scrypture package package to the path before importing
 # so everything can import everything else regardless of package
 scrypture_dir = os.path.realpath(
                      os.path.abspath(

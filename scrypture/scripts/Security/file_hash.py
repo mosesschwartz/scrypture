@@ -26,7 +26,7 @@ def hash(hash_type, input_text):
 
 ### WebAPI ###
 
-import webapi
+from scrypture import webapi
 class WebAPI(webapi.WebAPI):
     file_upload = webapi.file_field('File upload')
     hash_type = webapi.radio_field('What kind of hash?',

@@ -16,7 +16,7 @@ def convert_epoch_time(t):
 
 ### WebAPI ###
 
-import webapi
+from scrypture import webapi
 class WebAPI(webapi.WebAPI):
     timestamps = webapi.text_input('Timestamp(s)')
     submit_button = webapi.submit_button('Convert')

@@ -1,7 +1,7 @@
 '''Converts a cURL command to code for Python Requests'''
 import curl2requests.curl_to_requests as curl_to_requests
 
-import webapi
+from scrypture import webapi
 class WebAPI(webapi.WebAPI):
     input_text = webapi.text_input('Input')
     submit_button = webapi.submit_button('Convert')

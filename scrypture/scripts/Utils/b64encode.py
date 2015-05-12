@@ -16,7 +16,7 @@ def b64decode(s):
 
 ### WebAPI ###
 
-import webapi
+from scrypture import webapi
 class WebAPI(webapi.WebAPI):
     input_text = webapi.text_input('Input')
     encode_or_decode = webapi.radio_field('What do you want to do?',

@@ -12,7 +12,7 @@ def javascript_pretty_print(js):
 
 ### WebAPI ###
 
-import webapi
+from scrypture import webapi
 class WebAPI(webapi.WebAPI):
     input_text = webapi.text_input('Input')
     submit_button = webapi.submit_button('Run')

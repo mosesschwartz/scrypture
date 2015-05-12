@@ -41,7 +41,7 @@ if __name__ == '__main__':
     main()
 
 ### WebAPI ###
-import webapi
+from scrypture import webapi
 class WebAPI(webapi.WebAPI):
     nmap_output = webapi.text_input('NMAP Output')
     submit_button = webapi.submit_button('Convert to CSV')
