@@ -31,8 +31,9 @@ app = Flask(__name__)
 api = Api(app)
 
 # Try loading a local_config.py file
-if os.path.isfile('local_config.py'):
-    AppConfig(app, 'local_config.py')
+local_config_path = os.path.join(os.getcwd(), 'local_config.py')
+if os.path.exists(local_config_path):
+    AppConfig(app, local_config_path)
 # If it isn't there, import config.py
 # This is done to make it harder to lose local config changes when updating
 else:
@@ -367,7 +368,8 @@ api.add_resource(ScriptDocumentation, '/api/v1/docs')
 
 for script in registered_scripts:
     try:
-        s = import_module('.'+script, package='scripts')
+        s = import_module('.'+script,
+                          package=os.path.split(app.config['SCRIPTS_DIR'])[-1])
         s.package = s.__name__.split('.')[1]
         script_name = script.split('.')[-1] #remove package from script name
         registered_modules[script_name] = s
