@@ -15,11 +15,11 @@ logging.basicConfig(level=logging.DEBUG)
 
 class ScryptureAPI():
     def __init__(self,
-             base_url=API_BASE_URL,
-             username=None,
-             password=None,
-             interactive_password=False,
-             pass_auth=False):
+                 base_url=API_BASE_URL,
+                 username=None,
+                 password=None,
+                 interactive_password=False,
+                 pass_auth=False):
         self.password = password
         self.username = username
         if interactive_password:
@@ -29,7 +29,7 @@ class ScryptureAPI():
             self.auth = pass_auth
         else:
             self.auth = requests.auth.HTTPBasicAuth(self.username, self.password)
-        self.BASE_URL = base_url
+        self.BASE_URL = urlparse.urljoin(base_url, '/api/v1/')
         self.api_doc = self.get_api_docs()
         self.uris = {}
         self.api_funcs = {}
@@ -43,8 +43,8 @@ class ScryptureAPI():
                                   for kw,arg in kwargs.items()}
                     uri = self._generate_uri(module, **json_kwargs)
                     output = self.get_parse(uri)
-                    if output != '':
-                        output['output'] = json.loads(output['output'])
+#                    if output != '':
+#                        output['output'] = json.loads(output['output'])
                     return  output
                 return api_func
 

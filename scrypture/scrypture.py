@@ -15,7 +15,7 @@ from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
 from flask.ext.restful import reqparse, abort, Api, Resource
 from importlib import import_module
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import traceback
 import inspect
 import wtforms
@@ -26,6 +26,10 @@ import sys
 import werkzeug.datastructures
 from werkzeug import secure_filename
 import hashlib
+import tablib
+
+
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 api = Api(app)
@@ -37,7 +41,7 @@ if os.path.exists(local_config_path):
 # If it isn't there, import config.py
 # This is done to make it harder to lose local config changes when updating
 else:
-    AppConfig(app, 'config.py')
+    AppConfig(app, 'default_config.py')
 
 Bootstrap(app)
 
@@ -70,6 +74,18 @@ if scrypture_dir not in sys.path:
 # Load list of registered scripts
 registered_scripts = app.config['REGISTERED_SCRIPTS']
 registered_modules = {}
+
+for script in registered_scripts:
+    try:
+        s = import_module('.'+script,
+                          package=os.path.split(app.config['SCRIPTS_DIR'])[-1])
+        s.package = s.__name__.split('.')[1]
+        script_name = script.split('.')[-1] #remove package from script name
+        registered_modules[script_name] = s
+    except Exception as e:
+        logging.warning('Could not import '+str(script)+': '+str(e.message))
+        logging.debug(str(traceback.format_exc()))
+        continue
 
 @app.route('/', methods=['GET'])
 def index():
@@ -207,15 +223,20 @@ def run_script(module_name):
                                module_name=module_name,
                                headers=result['headers'])
 
-
-
-import tablib
-from collections import OrderedDict
-
 def order_by_header(table, headers):
     '''Convert a list of dicts to a list or OrderedDicts ordered by headers'''
-    return [OrderedDict(sorted(d.items(), key=lambda x:headers.index(x[0])))
-            for d in table]
+    ordered_table = []
+    for row in table:
+        # Tricky list comprehension got tricky when needing special handling
+        # Lets do this the simplest way we can:
+        row = {k:v for k,v in row.items() if k in headers}
+        for h in headers:
+            if h not in row:
+                row[h] = ''
+        ordered_row = OrderedDict(sorted(row.items(),
+                                         key=lambda x:headers.index(x[0])))
+        ordered_table.append(ordered_row)
+    return ordered_table
 
 def load_dataset(table, headers):
     data = tablib.Dataset()
@@ -223,10 +244,20 @@ def load_dataset(table, headers):
     data.dict = order_by_header(table, headers)
     return data
 
+import datetime
+def json_serial(obj):
+    """JSON serializer for objects not serializable by default json code"""
+    if isinstance(obj, datetime.datetime):
+        serial = obj.isoformat()
+        return serial
+
 @app.template_filter('to_json')
 def to_json(table, headers):
     data = load_dataset(table, headers)
-    return json.dumps(json.loads(data.json), indent=4, separators=(',', ': '))
+    data_json = json.dumps(data.dict,
+                           default=json_serial,
+                           indent=4, separators=(',', ': '))
+    return data_json
 
 @app.template_filter('to_html')
 def to_html(table, headers):
@@ -253,11 +284,13 @@ def to_repr(table, headers):
 
 @app.template_filter('to_trac')
 def to_trac(table, headers):
-    h = ' || '.join(['{}'.format(h) for h in headers])
-    wikiformatting = '|| {} ||\n'.format(h)
+    table = order_by_header(table, headers)
+    header_row = ' || '.join(['{}'.format(h) for h in headers])
+    wikiformatting = '|| {} ||\n'.format(header_row)
     for row in table:
         r = ' || '.join(['{}'.format(row[h]) for h in headers])
         wikiformatting += '|| {} ||\n'.format(r)
+    wikiformatting = wikiformatting.replace('\r\n','')
     return wikiformatting
 
 @app.context_processor
@@ -366,17 +399,7 @@ api.add_resource(ScriptDocumentation, '/api/v1/docs')
 
 
 
-for script in registered_scripts:
-    try:
-        s = import_module('.'+script,
-                          package=os.path.split(app.config['SCRIPTS_DIR'])[-1])
-        s.package = s.__name__.split('.')[1]
-        script_name = script.split('.')[-1] #remove package from script name
-        registered_modules[script_name] = s
-    except Exception as e:
-        logging.warning('Could not import '+str(script)+': '+str(e.message))
-        logging.debug(str(traceback.format_exc()))
-        continue
+
 
 
 
