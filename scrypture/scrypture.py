@@ -35,12 +35,15 @@ app = Flask(__name__)
 api = Api(app)
 
 # Try loading a local_config.py file
-local_config_path = os.path.join(os.getcwd(), 'local_config.py')
-if os.path.exists(local_config_path):
-    AppConfig(app, local_config_path)
+#local_config_path = os.path.join(os.getcwd(), 'local_config.py')
+#if os.path.exists(local_config_path):
+#    AppConfig(app, local_config_path)
 # If it isn't there, import config.py
 # This is done to make it harder to lose local config changes when updating
-else:
+#else:
+try:
+    AppConfig(app, 'local_config.py')
+except:
     AppConfig(app, 'default_config.py')
 
 Bootstrap(app)
