@@ -1,5 +1,6 @@
 body {
   padding-top: 5px;
+  margin-top:30px;
 }
 .main_body {
   padding: 0px 15px;
@@ -7,7 +8,7 @@ body {
 }
 
 .navbar-brand {
-  padding: 0 0 0 10;
+  padding: 0 0 0 0;
 }
 
 .navbar-default {
@@ -70,3 +71,8 @@ body {
     background-color: #03506d;
   }
 }
+
+.glyphicon { margin-right:10px; }
+.panel-body { padding:0px; }
+.panel-body table tr td { padding-left: 15px }
+.panel-body .table {margin-bottom: 0px; }

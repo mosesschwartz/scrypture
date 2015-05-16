@@ -1,10 +1,5 @@
 {% extends "scrypture_base.html" %}
-{% block content %}
-
-<div class="container">
-<div class="row">
-<div class="col-md-1"></div>
-<div class="col-md-10">
+{% block scrypture_content %}
 
 <div class="jumbotron">
   <h2>Welcome to Scrypture</h2>
@@ -56,9 +51,5 @@ class WebAPI(webapi.WebAPI):
   <p><a class="btn btn-primary btn-lg" href="/s/b64encode" role="button">Try the Web Interface</a></p>
 
 </div>
-
-
-</div>
-<div class="col-md-1"></div>
 
 {% endblock %}

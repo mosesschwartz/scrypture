@@ -35,4 +35,9 @@ REGISTERED_SCRIPTS = ['Network.nmap_to_csv',
                       'Text.shuffle_characters',
                       'Text.reverse_words',
                       'Text.reverse_characters',
-                      'Text.uniq']
+                      'Text.uniq',
+                      'Testing.opendns_investigate',
+                      'Testing.extract_iocs',
+                      'Testing.universal_ioc_extractor',
+                      'Testing.pdf_to_text',
+                      'Testing.docx_to_text']

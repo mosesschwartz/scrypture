@@ -1,6 +1,6 @@
 {% extends "scrypture_base.html" %}
 
-{% block content %}
+{% block scrypture_content %}
 
 <style>
 .string { color: darkblue; }
@@ -10,50 +10,44 @@
 .key { color: darkred; }
 </style>
 
-<div class="container">
-<div class="row">
-<div class="col-md-1"></div>
-<div class="col-md-10">
+<h1>{{ module_name }}</h1>
 
-  <h1>{{ module_name }}</h1>
+<div role="tabpanel">
 
-  <div role="tabpanel">
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#HTML" aria-controls="HTML" role="tab" data-toggle="tab">HTML</a></li>
+    <li role="presentation"><a href="#json" aria-controls="json" role="tab" data-toggle="tab">JSON</a></li>
+    <li role="presentation"><a href="#csv" aria-controls="csv" role="tab" data-toggle="tab">CSV</a></li>
+    <li role="presentation"><a href="#trac" aria-controls="trac" role="tab" data-toggle="tab">Trac</a></li>
+    <li role="presentation"><a href="#yaml" aria-controls="yaml" role="tab" data-toggle="tab">YAML</a></li>
+    <li role="presentation"><a href="#python" aria-controls="python" role="tab" data-toggle="tab">Python</a></li>
 
-    <!-- Nav tabs -->
-    <ul class="nav nav-tabs" role="tablist">
-      <li role="presentation" class="active"><a href="#HTML" aria-controls="HTML" role="tab" data-toggle="tab">HTML</a></li>
-      <li role="presentation"><a href="#json" aria-controls="json" role="tab" data-toggle="tab">JSON</a></li>
-      <li role="presentation"><a href="#csv" aria-controls="csv" role="tab" data-toggle="tab">CSV</a></li>
-      <li role="presentation"><a href="#trac" aria-controls="trac" role="tab" data-toggle="tab">Trac</a></li>
-      <li role="presentation"><a href="#yaml" aria-controls="yaml" role="tab" data-toggle="tab">YAML</a></li>
-      <li role="presentation"><a href="#python" aria-controls="python" role="tab" data-toggle="tab">Python</a></li>
+  </ul>
 
-    </ul>
-
-    <!-- Tab panes -->
-    <div class="tab-content">
-      <div role="tabpanel" class="tab-pane active" id="HTML">
-        {{ output | to_html(headers) | safe}}
-      </div>
-      <div role="tabpanel" class="tab-pane" id="json">
-        <pre id="output_json" onClick="selectText('output_json')">{{ output | to_json(headers) | safe}}</pre>
-      </div>
-      <div role="tabpanel" class="tab-pane" id="csv">
-        <pre id="output_csv"  onClick="selectText('output_csv')">{{ output | to_csv(headers) | safe}}</pre>
-      </div>
-      <div role="tabpanel" class="tab-pane" id="trac">
-        <pre id="output_trac" onClick="selectText('output_trac')">{{ output | to_trac(headers) | safe}}</pre>
-      </div>
-      <div role="tabpanel" class="tab-pane" id="yaml">
-        <pre id="output_yaml" onClick="selectText('output_yaml')">{{ output | to_yaml(headers) | safe}}</pre>
-      </div>
-      <div role="tabpanel" class="tab-pane" id="python">
-        <pre id="output_python" onClick="selectText('output_python')">{{ output | to_repr(headers) | safe}}</pre>
-      </div>
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="HTML">
+      {{ output | to_html(headers) | safe}}
+    </div>
+    <div role="tabpanel" class="tab-pane" id="json">
+      <pre id="output_json" onClick="selectText('output_json')">{{ output | to_json(headers) | safe}}</pre>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="csv">
+      <pre id="output_csv"  onClick="selectText('output_csv')">{{ output | to_csv(headers) | safe}}</pre>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="trac">
+      <pre id="output_trac" onClick="selectText('output_trac')">{{ output | to_trac(headers) | safe}}</pre>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="yaml">
+      <pre id="output_yaml" onClick="selectText('output_yaml')">{{ output | to_yaml(headers) | safe}}</pre>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="python">
+      <pre id="output_python" onClick="selectText('output_python')">{{ output | to_repr(headers) | safe}}</pre>
     </div>
   </div>
 </div>
-<div class="col-md-1"></div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -71,82 +65,6 @@ function selectText(containerid) {
         window.getSelection().addRange(range);
     }
 }
-
-/*
-function syntaxHighlight(json) {
-    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-        var cls = 'number';
-        if (/^"/.test(match)) {
-            if (/:$/.test(match)) {
-                cls = 'key';
-            } else {
-                cls = 'string';
-            }
-        } else if (/true|false/.test(match)) {
-            cls = 'boolean';
-        } else if (/null/.test(match)) {
-            cls = 'null';
-        }
-        return '<span class="' + cls + '">' + match + '</span>';
-    });
-}
-
-function buildHtmlTable() {
-  var $json_out = $('#output_json');
-  ScryptureOutput = JSON.parse($json_out.text());
-  var pretty_json = JSON.stringify(ScryptureOutput, undefined, 4);
-  $("#json_pretty").append(syntaxHighlight(pretty_json));
-  var columns = addAllColumnHeaders(ScryptureOutput);
-
-  // Table
-  for (var i = 0 ; i < ScryptureOutput.length ; i++) {
-      var row$ = $('<tr/>');
-      for (var colIndex = 0 ; colIndex < columns.length ; colIndex++) {
-          var cellValue = ScryptureOutput[i][columns[colIndex]];
-          if (cellValue == null) { cellValue = ""; }
-          row$.append($('<td/>').html(cellValue));
-      }
-      $("#output-table").append(row$);
-  }
-}
-
-function addAllColumnHeaders(ScryptureOutput) {
-    var columnSet = {{ headers | tojson }};
-    var headerTr$ = $('<tr/>');
-    for (var i = 0 ; i < {{headers | length}} ; i++) {
-        var header = columnSet[i];
-        headerTr$.append($('<th/>').html(header));
-    }
-   $("#output-table").append(headerTr$);
-
-   return columnSet;
-}
-*/
-
-// Adds a header row to the table and returns the set of columns.
-// Need to do union of keys from all records as some records may not contain
-// all records
-// function addAllColumnHeaders(ScryptureOutput)
-// {
-//    var columnSet = [];
-//    var headerTr$ = $('<tr/>');
-//
-//    for (var i = 0 ; i < ScryptureOutput.length ; i++) {
-//        var rowHash = ScryptureOutput[i];
-//        for (var key in rowHash) {
-//            if ($.inArray(key, columnSet) == -1){
-//                columnSet.push(key);
-//                headerTr$.append($('<th/>').html(key));
-//            }
-//        }
-//    }
-//    $("#output-table").append(headerTr$);
-//
-//    return columnSet;
-// }
-
-//buildHtmlTable()
 
 </script>
 {% endblock %}

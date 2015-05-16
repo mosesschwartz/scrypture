@@ -1,0 +1,28 @@
+<div class="panel-group" id="accordion">
+{% for module in scripts.values() | groupby('__package__') %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{ module.grouper.split('.')[1] }}"><span class="glyphicon glyphicon-expand">
+                </span>{{ module.grouper.split('.')[1] }}</a>
+            </h4>
+        </div>
+        <div id="collapse{{ module.grouper.split('.')[1] }}" class="panel-collapse collapse">
+            <div class="panel-body">
+                <table class="table">
+                    {% for script_name, mod in scripts.items() %}
+                    {% if mod.__package__ == module.grouper %}
+                    <tr>
+                        <td>
+                            <a href="/s/{{ script_name }}">{{ script_name }}</a>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+</div>
+

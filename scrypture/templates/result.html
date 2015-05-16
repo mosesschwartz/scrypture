@@ -1,11 +1,7 @@
 {% extends "scrypture_base.html" %}
-{% block content %}
-<div class="container">
-<div class="row">
-<div class="col-md-1"></div>
-<div class="col-md-10">
-  <h1>{{ module_name }}</h1>
-  <pre>{{ output }}</pre>
-</div>
-<div class="col-md-1"></div>
+{% block scrypture_content %}
+
+<h1>{{ module_name }}</h1>
+<pre>{{ output }}</pre>
+
 {% endblock %}

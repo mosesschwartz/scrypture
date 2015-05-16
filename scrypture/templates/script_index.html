@@ -1,13 +1,9 @@
 {% extends "scrypture_base.html" %}
-{% block content %}
-<div class="container">
-<div class="row">
-<div class="col-md-1"></div>
-<div class="col-md-10">
-  <h1>{{ module_name }}</h1>
-   <!--<a href="/dl/{{ module_name }}.py">Download {{ module_name }}.py</a>-->
-  <pre>{{ scripts[module_name].__doc__ }}</pre>
-  {{ wtf.quick_form(form, method='post', enctype='multipart/form-data', button_map={'submit_button': 'primary'}) }}
-</div>
-<div class="col-md-1"></div>
+{% block scrypture_content %}
+
+<h1>{{ module_name }}</h1>
+<!--<a href="/dl/{{ module_name }}.py">Download {{ module_name }}.py</a>-->
+<pre>{{ scripts[module_name].__doc__ }}</pre>
+{{ wtf.quick_form(form, method='post', enctype='multipart/form-data', button_map={'submit_button': 'primary'}) }}
+
 {% endblock %}
