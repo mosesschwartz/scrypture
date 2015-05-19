@@ -10,7 +10,8 @@ from flask import Flask, \
                   send_from_directory, \
                   Markup, \
                   jsonify, \
-                  send_file
+                  send_file, \
+                  Response
 from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
 from flask.ext.restful import reqparse, abort, Api, Resource
@@ -28,10 +29,8 @@ from werkzeug import secure_filename
 import hashlib
 import tablib
 
-
-logging.basicConfig(level=logging.DEBUG)
-
 app = Flask(__name__)
+Bootstrap(app)
 api = Api(app)
 
 # Try loading a local_config.py file
@@ -41,54 +40,16 @@ api = Api(app)
 # If it isn't there, import config.py
 # This is done to make it harder to lose local config changes when updating
 #else:
-try:
-    AppConfig(app, 'local_config.py')
-except:
-    AppConfig(app, 'default_config.py')
 
-Bootstrap(app)
+def load_config(cfg_path):
+    AppConfig(app, cfg_path)
 
-
-# Add scrypture package package to the path before importing
-# so everything can import everything else regardless of package
-scrypture_dir = os.path.realpath(
-                     os.path.abspath(
-                       os.path.split(
-                         inspect.getfile( inspect.currentframe() ))[0]))
-
-if scrypture_dir not in sys.path:
-    sys.path.insert(0, scrypture_dir)
-
-#scripts_dir = app.config['SCRIPTS_DIR']
-#if scripts_dir not in sys.path:
-#    sys.path.insert(0, scripts_dir)
-
-#cmd_subfolder = os.path.realpath(
-#                  os.path.abspath(
-#                    os.path.join(
-#                      os.path.split(
-#                        inspect.getfile(
-#                          inspect.currentframe()))[0],"scripts")))
-#if cmd_subfolder not in sys.path:
-#    sys.path.insert(0, cmd_subfolder)
+#try:
+#    AppConfig(app, 'local_config.py')
+#except:
+#    AppConfig(app, 'default_config.py')
 
 
-
-# Load list of registered scripts
-registered_scripts = app.config['REGISTERED_SCRIPTS']
-registered_modules = {}
-
-for script in registered_scripts:
-    try:
-        s = import_module('.'+script,
-                          package=os.path.split(app.config['SCRIPTS_DIR'])[-1])
-        s.package = s.__name__.split('.')[1]
-        script_name = script.split('.')[-1] #remove package from script name
-        registered_modules[script_name] = s
-    except Exception as e:
-        logging.warning('Could not import '+str(script)+': '+str(e.message))
-        logging.debug(str(traceback.format_exc()))
-        continue
 
 @app.route('/', methods=['GET'])
 def index():
@@ -219,6 +180,11 @@ def run_script(module_name):
                                output=result['output'],
                                scripts=registered_modules,
                                module_name=module_name)
+    elif result['output_type'] == 'file':
+        return Response(result['output'],
+                        mimetype='application/octet-stream',
+                        headers={'Content-Disposition':
+                                 'attachment;filename='+result['filename']})
     elif result['output_type'] == 'table':
         return render_template('result_table.html',
                                output=result['output'],
@@ -320,85 +286,114 @@ def utility_processor():
         return Markup(nav_link_top+nav_links+nav_link_bottom)
     return dict(make_navbar_links=make_navbar_links)
 
+registered_modules = {}
 
+def load_scripts():
+    # Add scrypture package package to the path before importing
+    # so everything can import everything else regardless of package
+    scrypture_dir = os.path.realpath(
+                         os.path.abspath(
+                           os.path.split(
+                             inspect.getfile( inspect.currentframe() ))[0]))
 
-### Set up the Scrypture API below ###
+    if scrypture_dir not in sys.path:
+        sys.path.insert(0, scrypture_dir)
 
-# Field documentation at:
-# http://wtforms.simplecodes.com/docs/0.6/fields.html#basic-fields
+    # Load list of registered scripts
+    registered_scripts = app.config['REGISTERED_SCRIPTS']
 
-wtf_field_types = {'BooleanField' : str,
-                   'DateField' : str,
-                   'DateTimeField' : str,
-                   'DecimalField' : str,
-                   'FileField' : str,
-                   'FloatField' : str,
-                   'HiddenField' : str,
-                   'IntegerField' : str,
-                   'PasswordField' : str,
-                   'RadioField' : str,
-                   'SelectField' : str,
-                   'SelectMultipleField' : str,
-                   'TextAreaField' : str,
-                   'TextField' : str}
+    for script in registered_scripts:
+        try:
+            s = import_module('.'+script,
+                package=os.path.split(app.config['SCRIPTS_DIR'])[-1])
+            s.package = s.__name__.split('.')[1]
+            #remove package from script name:
+            script_name = script.split('.')[-1]
+            registered_modules[script_name] = s
+        except Exception as e:
+            logging.warning('Could not import ' + \
+                            str(script)+': '+str(e.message))
+            logging.debug(str(traceback.format_exc()))
+            continue
 
-api_classes = {}
+def load_api():
+    ### Set up the Scrypture API below ###
 
-parser = reqparse.RequestParser()
-for module_name, module in registered_modules.items():
-    module_fields = []
-    for attr_name, attr in inspect.getmembers(module.WebAPI):
-        if type(attr) == wtforms.fields.core.UnboundField:
-            for wtf_field_type in wtf_field_types:
-                if attr.field_class == getattr(wtforms, wtf_field_type):
-                    module_fields.append((attr_name, wtf_field_type, attr.input_type))
+    # Field documentation at:
+    # http://wtforms.simplecodes.com/docs/0.6/fields.html#basic-fields
 
-    def api_class_factory():
-        class ScriptAPI(Resource):
-            module = None
-            module_parser = None
-            module_fields = None
-            def get(self):
-                args = self.module_parser.parse_args()
-                kwargs = {}
-                for field_name, wtf_field_type, input_type in self.module_fields:
-                    if wtf_field_type == 'TextAreaField':
-                        if input_type == 'text':
-                            kwargs[field_name] = json.loads(args[field_name])
+    wtf_field_types = {'BooleanField' : str,
+                       'DateField' : str,
+                       'DateTimeField' : str,
+                       'DecimalField' : str,
+                       'FileField' : str,
+                       'FloatField' : str,
+                       'HiddenField' : str,
+                       'IntegerField' : str,
+                       'PasswordField' : str,
+                       'RadioField' : str,
+                       'SelectField' : str,
+                       'SelectMultipleField' : str,
+                       'TextAreaField' : str,
+                       'TextField' : str}
+
+    api_classes = {}
+
+    parser = reqparse.RequestParser()
+    for module_name, module in registered_modules.items():
+        module_fields = []
+        for attr_name, attr in inspect.getmembers(module.WebAPI):
+            if type(attr) == wtforms.fields.core.UnboundField:
+                for wtf_field_type in wtf_field_types:
+                    if attr.field_class == getattr(wtforms, wtf_field_type):
+                        module_fields.append((attr_name, wtf_field_type, attr.input_type))
+
+        def api_class_factory():
+            class ScriptAPI(Resource):
+                module = None
+                module_parser = None
+                module_fields = None
+                def get(self):
+                    args = self.module_parser.parse_args()
+                    kwargs = {}
+                    for field_name, wtf_field_type, input_type in self.module_fields:
+                        if wtf_field_type == 'TextAreaField':
+                            if input_type == 'text':
+                                kwargs[field_name] = json.loads(args[field_name])
+                            else:
+                                kwargs[field_name] = json.loads(args[field_name])
                         else:
                             kwargs[field_name] = json.loads(args[field_name])
-                    else:
-                        kwargs[field_name] = json.loads(args[field_name])
-                kwargs['HTTP_AUTHORIZATION'] = request.environ.get('HTTP_AUTHORIZATION')
-                return self.module.WebAPI().run(kwargs)
-        ScriptAPI.__name__ = 'scriptapi_{}'.format(module_name)
-        return ScriptAPI
+                    kwargs['HTTP_AUTHORIZATION'] = request.environ.get('HTTP_AUTHORIZATION')
+                    return self.module.WebAPI().run(kwargs)
+            ScriptAPI.__name__ = 'scriptapi_{}'.format(module_name)
+            return ScriptAPI
 
-    api_class = api_class_factory()
-    api_class.module = module
-    api_class.module_parser = parser.copy()
-    api_class.module_fields = module_fields
+        api_class = api_class_factory()
+        api_class.module = module
+        api_class.module_parser = parser.copy()
+        api_class.module_fields = module_fields
 
-    for field_name, wtf_field_type, input_type in api_class.module_fields:
-        api_class.module_parser.add_argument(field_name,
-                            type=wtf_field_types[wtf_field_type],
-                            required=True)
-    api_classes[module_name] = api_class
+        for field_name, wtf_field_type, input_type in api_class.module_fields:
+            api_class.module_parser.add_argument(field_name,
+                                type=wtf_field_types[wtf_field_type],
+                                required=True)
+        api_classes[module_name] = api_class
 
-for module_name in registered_modules:
-    api.add_resource(api_classes[module_name], '/api/v1/'+module_name)
+    for module_name in registered_modules:
+        api.add_resource(api_classes[module_name], '/api/v1/'+module_name)
 
-class ScriptDocumentation(Resource):
-    def get(self):
-        api_docs = {}
-        for module_name, module in registered_modules.items():
-            api_docs[module_name] = {
-                '__doc__' : module.__doc__,
-                'args' : [(arg.name, arg.type.__name__)
-                          for arg in api_classes[module_name].module_parser.args]}
-        return api_docs
+    class ScriptDocumentation(Resource):
+        def get(self):
+            api_docs = {}
+            for module_name, module in registered_modules.items():
+                api_docs[module_name] = {
+                    '__doc__' : module.__doc__,
+                    'args' : [(arg.name, arg.type.__name__)
+                              for arg in api_classes[module_name].module_parser.args]}
+            return api_docs
 
-api.add_resource(ScriptDocumentation, '/api/v1/docs')
+    api.add_resource(ScriptDocumentation, '/api/v1/docs')
 
 
 

@@ -67,13 +67,23 @@ if __name__ == '__main__':
 from scrypture import webapi
 class WebAPI(webapi.WebAPI):
     json_input = webapi.text_input('JSON')
+    output_type = webapi.radio_field('Result',
+                                     choices=[('string', 'Output as string'),
+                                              ('file', "Download as file")],
+                                     default='string')
     submit_button = webapi.submit_button('Convert')
 
     def run(self, form_input):
         json_input = form_input['json_input']
         output = json_to_csv(json_input)
+        output_type = form_input['output_type']
 
-        return {'output_type' : 'simple',
-                'output' : output}
+        if output_type == 'string':
+            return {'output_type' : 'simple',
+                    'output' : output}
+        elif output_type == 'file':
+            return {'output_type' : 'file',
+                    'filename' : 'json_to_csv.csv',
+                    'output' : output}
 
 
