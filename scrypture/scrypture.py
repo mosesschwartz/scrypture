@@ -51,7 +51,7 @@ def get_authorization():
         password = app.config['SCRYPTURE_PASSWORD']
         return requests.auth.HTTPBasicAuth(username, password)
     else:
-        import api
+        import webapi
         auth_header = request.environ.get('HTTP_AUTHORIZATION')
         auth = webapi.PassHTTPAuthorizationHeader(auth_header)
         return auth
