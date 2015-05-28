@@ -13,7 +13,7 @@ LOCAL_DEV = True
 """
 To add another script, place the file inside the scripts package
 and add the name to registered_scripts below. The loading code
-below will automagically find and import the script and put it into the
+will automagically find and import the script and put it into the
 registered_modules dictionary.
 """
 REGISTERED_SCRIPTS = ['Network.nmap_to_csv',
