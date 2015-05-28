@@ -44,12 +44,17 @@ api = Api(app)
 def load_config(cfg_path):
     AppConfig(app, cfg_path)
 
-#try:
-#    AppConfig(app, 'local_config.py')
-#except:
-#    AppConfig(app, 'default_config.py')
-
-
+def get_authorization():
+    if app.config['LOCAL_DEV'] is True:
+        import requests.auth
+        username = app.config['SCRYPTURE_USERNAME']
+        password = app.config['SCRYPTURE_PASSWORD']
+        return requests.auth.HTTPBasicAuth(username, password)
+    else:
+        import api
+        auth_header = request.environ.get('HTTP_AUTHORIZATION')
+        auth = webapi.PassHTTPAuthorizationHeader(auth_header)
+        return auth
 
 @app.route('/', methods=['GET'])
 def index():
@@ -149,7 +154,7 @@ def run_script(module_name):
         #f.save(os.path.join(file_dir,filename))
     try:
         form = werkzeug.datastructures.MultiDict(request.form)
-        form['HTTP_AUTHORIZATION'] = request.environ.get('HTTP_AUTHORIZATION')
+        form['HTTP_AUTHORIZATION'] = get_authorization()
         form['filename'] = filename
         form['file_stream'] = file_stream
         #form['file_dir'] = file_dir
@@ -364,7 +369,7 @@ def load_api():
                                 kwargs[field_name] = json.loads(args[field_name])
                         else:
                             kwargs[field_name] = json.loads(args[field_name])
-                    kwargs['HTTP_AUTHORIZATION'] = request.environ.get('HTTP_AUTHORIZATION')
+                    kwargs['HTTP_AUTHORIZATION'] = get_authorization()
                     return self.module.WebAPI().run(kwargs)
             ScriptAPI.__name__ = 'scriptapi_{}'.format(module_name)
             return ScriptAPI
