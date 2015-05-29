@@ -9,6 +9,8 @@ API_BASE_URL = 'http://localhost:5000/'
 BOOTSTRAP_SERVE_LOCAL = True
 SCRIPT_ROOT = '/'
 LOCAL_DEV = True
+SCRYPTURE_USERNAME = "Nada"
+SCRYPTURE_PASSWORD = "Nothing"
 
 """
 To add another script, place the file inside the scripts package
