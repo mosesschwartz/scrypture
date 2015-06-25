@@ -267,6 +267,19 @@ def to_trac(table, headers):
     wikiformatting = wikiformatting.replace('\r\n','')
     return wikiformatting
 
+@app.template_filter('to_markdown')
+def to_markdown(table, headers):
+    table = order_by_header(table, headers)
+    header_row = ' | '.join(['{}'.format(h) for h in headers])
+    markdownformatting = '{}\n'.format(header_row)
+    header_divider = '--- | ---'.join(['' for h in headers])
+    markdownformatting += '{}\n'.format(header_divider)
+    for row in table:
+        r = ' | '.join(['{}'.format(row[h]) for h in headers])
+        markdownformatting += '{}\n'.format(r)
+    markdownformatting = markdownformatting.replace('\r\n','')
+    return markdownformatting
+
 @app.context_processor
 def utility_processor():
     def make_navbar_links():
