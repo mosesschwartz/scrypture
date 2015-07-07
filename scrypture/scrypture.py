@@ -33,14 +33,6 @@ app = Flask(__name__)
 Bootstrap(app)
 api = Api(app)
 
-# Try loading a local_config.py file
-#local_config_path = os.path.join(os.getcwd(), 'local_config.py')
-#if os.path.exists(local_config_path):
-#    AppConfig(app, local_config_path)
-# If it isn't there, import config.py
-# This is done to make it harder to lose local config changes when updating
-#else:
-
 def load_config(cfg_path):
     AppConfig(app, cfg_path)
 
@@ -129,13 +121,66 @@ def script_input(module_name):
                            scripts=registered_modules,
                            module_name=module_name)
 
-@app.route('/s/<module_name>', methods=['POST'])
+@app.route('/api/v2/docs')
+def api_docs():
+    api_docs = {}
+    for module_name, module in registered_modules.items():
+        api_docs[module_name] = {
+            '__doc__' : module.__doc__,
+            'args' : [(attr_name)
+                      for attr_name,attr in inspect.getmembers(module.WebAPI)
+                      if type(attr) == wtforms.fields.core.UnboundField]}
+    return jsonify(api_docs)
+
+def try_json(x):
+    '''Can we load as JSON? Then do it. Exception? Then skip it'''
+    try:
+        return json.loads(x)
+    except:
+        return x
+
+@app.route('/api/v2/<module_name>', methods=['GET', 'POST'])
+def run_script_api(module_name):
+    '''Take script input (from script_input above), run the run() function, and
+    render the results in the appropriate template'''
+    filename = ''
+    file_stream = ''
+    print 'HI'
+    form = {k:try_json(v) for k,v in request.values.items()}
+    if len(request.files) > 0:
+        # Get the name of the uploaded file
+        f = request.files['file_upload']
+
+        # Make the filename safe, remove unsupported chars
+        filename = secure_filename(f.filename)
+        file_stream = f.stream
+
+    form = werkzeug.datastructures.MultiDict(form)
+    form['HTTP_AUTHORIZATION'] = get_authorization()
+    form['filename'] = filename
+    form['file_stream'] = file_stream
+    print 'AFGS'
+    try:
+        result = registered_modules[module_name].WebAPI().run(form)
+    except Exception:
+        return render_template('error.html',
+                               scripts=registered_modules,
+                               module_name=module_name,
+                               error_message=traceback.format_exc())
+
+    if result['output_type'] == 'file':
+        return Response(result['output'],
+                        mimetype='application/octet-stream',
+                        headers={'Content-Disposition':
+                                 'attachment;filename='+result['filename']})
+    else:
+        return jsonify(result)
+
+@app.route('/s/<module_name>', methods=['POST', 'GET'])
 def run_script(module_name):
     '''Take script input (from script_input above), run the run() function, and
     render the results in the appropriate template'''
     filename = ''
-    #file_dir = ''
-    #file_id = ''
     file_stream = ''
     if len(request.files) > 0:
         # Get the name of the uploaded file
@@ -144,21 +189,11 @@ def run_script(module_name):
         # Make the filename safe, remove unsupported chars
         filename = secure_filename(f.filename)
         file_stream = f.stream
-        #file_id = hashlib.md5(f.stream.read()).hexdigest()
-        #f.stream.seek(0) # the save below won't work unless we  seek to 0
-
-        #file_dir = os.path.join(app.config['UPLOAD_FOLDER'], file_id)
-
-        #if not os.path.exists(file_dir):
-        #    os.makedirs(file_dir)
-        #f.save(os.path.join(file_dir,filename))
     try:
         form = werkzeug.datastructures.MultiDict(request.form)
         form['HTTP_AUTHORIZATION'] = get_authorization()
         form['filename'] = filename
         form['file_stream'] = file_stream
-        #form['file_dir'] = file_dir
-        #form['file_id'] = file_id
         result = registered_modules[module_name].WebAPI().run(form)
     except Exception:
         if app.config['LOCAL_DEV'] == True:
@@ -322,86 +357,9 @@ def load_scripts():
             continue
 
 def load_api():
-    ### Set up the Scrypture API below ###
-
-    # Field documentation at:
-    # http://wtforms.simplecodes.com/docs/0.6/fields.html#basic-fields
-
-    wtf_field_types = {'BooleanField' : str,
-                       'DateField' : str,
-                       'DateTimeField' : str,
-                       'DecimalField' : str,
-                       'FileField' : str,
-                       'FloatField' : str,
-                       'HiddenField' : str,
-                       'IntegerField' : str,
-                       'PasswordField' : str,
-                       'RadioField' : str,
-                       'SelectField' : str,
-                       'SelectMultipleField' : str,
-                       'TextAreaField' : str,
-                       'TextField' : str}
-
-    api_classes = {}
-
-    parser = reqparse.RequestParser()
-    for module_name, module in registered_modules.items():
-        module_fields = []
-        for attr_name, attr in inspect.getmembers(module.WebAPI):
-            if type(attr) == wtforms.fields.core.UnboundField:
-                for wtf_field_type in wtf_field_types:
-                    if attr.field_class == getattr(wtforms, wtf_field_type):
-                        module_fields.append((attr_name, wtf_field_type, attr.input_type))
-
-        def api_class_factory():
-            class ScriptAPI(Resource):
-                module = None
-                module_parser = None
-                module_fields = None
-                def get(self):
-                    args = self.module_parser.parse_args()
-                    kwargs = {}
-                    for field_name, wtf_field_type, input_type in self.module_fields:
-                        if wtf_field_type == 'TextAreaField':
-                            if input_type == 'text':
-                                kwargs[field_name] = json.loads(args[field_name])
-                            else:
-                                kwargs[field_name] = json.loads(args[field_name])
-                        else:
-                            kwargs[field_name] = json.loads(args[field_name])
-                    kwargs['HTTP_AUTHORIZATION'] = get_authorization()
-                    return self.module.WebAPI().run(kwargs)
-            ScriptAPI.__name__ = 'scriptapi_{}'.format(module_name)
-            return ScriptAPI
-
-        api_class = api_class_factory()
-        api_class.module = module
-        api_class.module_parser = parser.copy()
-        api_class.module_fields = module_fields
-
-        for field_name, wtf_field_type, input_type in api_class.module_fields:
-            api_class.module_parser.add_argument(field_name,
-                                type=wtf_field_types[wtf_field_type],
-                                required=True)
-        api_classes[module_name] = api_class
-
-    for module_name in registered_modules:
-        api.add_resource(api_classes[module_name], '/api/v1/'+module_name)
-
-    class ScriptDocumentation(Resource):
-        def get(self):
-            api_docs = {}
-            for module_name, module in registered_modules.items():
-                api_docs[module_name] = {
-                    '__doc__' : module.__doc__,
-                    'args' : [(arg.name, arg.type.__name__)
-                              for arg in api_classes[module_name].module_parser.args]}
-            return api_docs
-
-    api.add_resource(ScriptDocumentation, '/api/v1/docs')
-
-
-
+    '''old v1 API, leaving this stub in for scripts that explicitly call
+    load_api'''
+    print 'Deprecated call to load_api'
 
 
 
