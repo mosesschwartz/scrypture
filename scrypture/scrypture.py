@@ -121,6 +121,7 @@ def script_input(module_name):
                            scripts=registered_modules,
                            module_name=module_name)
 
+@app.route('/api/v1/docs')
 @app.route('/api/v2/docs')
 def api_docs():
     api_docs = {}
@@ -139,14 +140,15 @@ def try_json(x):
     except:
         return x
 
+@app.route('/api/v1/<module_name>', methods=['GET', 'POST'])
 @app.route('/api/v2/<module_name>', methods=['GET', 'POST'])
 def run_script_api(module_name):
-    '''Take script input (from script_input above), run the run() function, and
-    render the results in the appropriate template'''
+    '''API handler. Take script input (from script_input above), run the run()
+    function, and return the results'''
     filename = ''
     file_stream = ''
-    print 'HI'
-    form = {k:try_json(v) for k,v in request.values.items()}
+    form = {k : try_json(v) for k,v in request.values.items()}
+
     if len(request.files) > 0:
         # Get the name of the uploaded file
         f = request.files['file_upload']
@@ -159,14 +161,11 @@ def run_script_api(module_name):
     form['HTTP_AUTHORIZATION'] = get_authorization()
     form['filename'] = filename
     form['file_stream'] = file_stream
-    print 'AFGS'
     try:
         result = registered_modules[module_name].WebAPI().run(form)
-    except Exception:
-        return render_template('error.html',
-                               scripts=registered_modules,
-                               module_name=module_name,
-                               error_message=traceback.format_exc())
+    except:
+        raise
+        #return jsonify({'error' : str(traceback.format_exc())})
 
     if result['output_type'] == 'file':
         return Response(result['output'],
@@ -342,6 +341,7 @@ def utility_processor():
 registered_modules = {}
 
 def load_scripts():
+    '''Import all of the modules named in REGISTERED_SCRIPTS'''
     # Add scrypture package package to the path before importing
     # so everything can import everything else regardless of package
     scrypture_dir = os.path.realpath(

@@ -8,7 +8,7 @@ import urlparse
 try:
     from scrypture import app
     API_BASE_URL = app.config['API_BASE_URL']
-except ImportError:
+except:
     API_BASE_URL = 'http://localhost:5000/'
 
 logging.basicConfig(level=logging.DEBUG)
