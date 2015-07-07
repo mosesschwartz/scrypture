@@ -41,7 +41,7 @@ class ScryptureAPI():
                     json_kwargs = {kw : json.dumps(arg)
                                   for kw,arg in kwargs.items()}
                     uri = self.uris[module]
-                    output = self.post_parse(uri, params=kwargs)
+                    output = self.post_parse(uri, data=kwargs)
                     return  output
                 return api_func
 
