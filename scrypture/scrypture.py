@@ -147,7 +147,15 @@ def run_script_api(module_name):
     function, and return the results'''
     filename = ''
     file_stream = ''
-    form = {k : try_json(v) for k,v in request.values.items()}
+    #form = {k : try_json(v) for k,v in request.values.items()}
+    form = request.values.to_dict(flat=False)
+    print form
+    for x in form:
+        if type(form[x]) == list and len(form[x]) == 1:
+            form[x] = form[x][0]
+    for x in form:
+        form[x] = try_json(form[x])
+    print form
 
     if len(request.files) > 0:
         # Get the name of the uploaded file
@@ -157,7 +165,6 @@ def run_script_api(module_name):
         filename = secure_filename(f.filename)
         file_stream = f.stream
 
-    form = werkzeug.datastructures.MultiDict(form)
     form['HTTP_AUTHORIZATION'] = get_authorization()
     form['filename'] = filename
     form['file_stream'] = file_stream
