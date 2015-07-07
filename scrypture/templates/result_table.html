@@ -20,6 +20,7 @@
     <li role="presentation"><a href="#json" aria-controls="json" role="tab" data-toggle="tab">JSON</a></li>
     <li role="presentation"><a href="#csv" aria-controls="csv" role="tab" data-toggle="tab">CSV</a></li>
     <li role="presentation"><a href="#trac" aria-controls="trac" role="tab" data-toggle="tab">Trac</a></li>
+    <li role="presentation"><a href="#markdown" aria-controls="markdown" role="tab" data-toggle="tab">Markdown</a></li>
     <li role="presentation"><a href="#yaml" aria-controls="yaml" role="tab" data-toggle="tab">YAML</a></li>
     <li role="presentation"><a href="#python" aria-controls="python" role="tab" data-toggle="tab">Python</a></li>
 
@@ -38,6 +39,9 @@
     </div>
     <div role="tabpanel" class="tab-pane" id="trac">
       <pre id="output_trac" onClick="selectText('output_trac')">{{ output | to_trac(headers) | safe}}</pre>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="markdown">
+      <pre id="output_markdown" onClick="selectText('output_markdown')">{{ output | to_markdown(headers) | safe}}</pre>
     </div>
     <div role="tabpanel" class="tab-pane" id="yaml">
       <pre id="output_yaml" onClick="selectText('output_yaml')">{{ output | to_yaml(headers) | safe}}</pre>
