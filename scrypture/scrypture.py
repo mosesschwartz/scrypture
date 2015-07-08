@@ -149,13 +149,13 @@ def run_script_api(module_name):
     file_stream = ''
     #form = {k : try_json(v) for k,v in request.values.items()}
     form = request.values.to_dict(flat=False)
-    print form
+    if request.json:
+        form.update(request.json)
     for x in form:
         if type(form[x]) == list and len(form[x]) == 1:
             form[x] = form[x][0]
     for x in form:
         form[x] = try_json(form[x])
-    print form
 
     if len(request.files) > 0:
         # Get the name of the uploaded file

@@ -69,11 +69,10 @@ class ScryptureAPI():
 
     def post(self, uri, params={}, data={}):
         '''A generic method to make POST requests on the given URI.'''
-        print '> ', data
         return requests.post(
             urlparse.urljoin(self.BASE_URL, uri),
-            params=params, data=data, verify=False,
-            auth=self.auth)
+            params=params, data=json.dumps(data), verify=False,
+            auth=self.auth, headers = {'Content-type': 'application/json', 'Accept': 'text/plain'})
 
     def _request_parse(self, method, *args):
         r = method(*args)
