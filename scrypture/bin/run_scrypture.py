@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from scrypture.scrypture import app, load_scripts, load_api, load_config
 import logging
 import sys
